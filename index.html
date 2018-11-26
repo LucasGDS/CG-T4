@@ -1,0 +1,117 @@
+<!doctype html>
+<!--T4 - Lucas Gomes da Silva - 1312010 -->
+<html>
+  <head>
+    <title> T4: Rasterizando com WebGL </title>
+    <link rel="stylesheet" type="text/css" href="./style.css">  
+  </head>
+  
+  <body onload="onLoad()">
+    
+    <!-- <canvas id="canvas" width="800" height="600"></canvas> -->
+      
+    <canvas id="canvas" style="background-color: black" width="800" height="600"></canvas>
+      
+    <form onclick="onLoad()">
+      Iluminação:<br>
+      <input type="radio" name="colors" id="vert" checked = "true">Vertex Shader<br>
+      <input type="radio" name="colors" id="frag">Fragment Shader<br>
+    </form>
+     <!--A versao precisa esta nessa posicao para evitar erros.-->
+     <script id="vertexShaderSrc" type="notjs">#version 300 es
+   
+       in vec3 vertexPos;
+       in vec3 color;
+       in vec3 a_normal;
+
+       uniform mat4 mvp;
+       uniform vec3 u_reverseLightDirection;
+       uniform vec3 u_colorLight;
+       uniform vec3 u_amb;
+       // Passed in and varied from the vertex shader.
+   
+       out vec3 colorv;
+   
+       void main() {
+        vec3 dl; 
+        float light = dot(a_normal, u_reverseLightDirection);
+
+        //part of diffuse
+        dl = light * u_colorLight;
+
+        colorv = color * dl;
+        gl_Position = mvp * vec4(vertexPos,1.0);
+
+       }
+   
+     </script>
+     <!--A versao precisa esta nessa posicao para evitar erros.-->
+     <script id="fragmentShaderSrc" type="notjs">#version 300 es
+       precision mediump float;
+   
+       in vec3 colorv;
+
+     //a saida do fragment eh sempre um vec4
+       out vec4 color;
+   
+       void main(void) {
+           color = vec4(colorv, 1.0);
+       }
+   
+     </script>
+
+     <script id="vertexShaderSrc2" type="notjs">#version 300 es
+   
+      in vec3 vertexPos;
+      in vec3 color;
+      in vec3 a_normal;
+
+      uniform mat4 mvp;
+      
+      // Passed in and varied from the vertex shader.
+     
+      out vec3 colorv;
+      //varying to pass the normal to the fragment shader
+      out vec3 v_normal;
+  
+      void main() {
+
+       colorv = color;
+       gl_Position = mvp * vec4(vertexPos,1.0);
+
+       //pass normal to fragment shader
+       v_normal = a_normal;
+      }
+  
+    </script>
+    <!--A versao precisa esta nessa posicao para evitar erros.-->
+    <script id="fragmentShaderSrc2" type="notjs">#version 300 es
+      precision mediump float;
+  
+      in vec3 colorv;
+      in vec3 v_normal;
+
+      uniform vec3 u_reverseLightDirection;
+      uniform vec3 u_colorLight;
+      uniform vec3 u_amb;
+
+    //a saida do fragment eh sempre um vec4
+    out vec4 color;
+    
+    void main(void) {
+      vec3 normal = normalize(v_normal);
+      vec3 dl,col; 
+        float light = dot(normal, u_reverseLightDirection);
+
+       //part of diffuse
+       dl = light * u_colorLight;
+       color = vec4(colorv*dl, 1.0);
+      }
+  
+    </script>
+
+     <script src="./gl-matrix-min.js"></script>
+     <script src="./raster.js"> </script>
+
+  </body>
+</html> 
